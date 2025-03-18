@@ -5,7 +5,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.ticker import IndexLocator
 import numpy as np
 import distinctipy
-import pandas as np
+import pandas as pd
 
 from trviz.utils import PRIVATE_MOTIF_LABEL
 
