@@ -366,43 +366,70 @@ class TandemRepeatVisualizer:
         count = 0
         last_index = 0
         total_rows = sorted_aligned_labeled_repeats_df.shape[0] - 1
+        index_of_partials = []
         
         for i, row in sorted_aligned_labeled_repeats_df.iterrows():
             
             if last_symbol == "NO_SYMBOL_YET":
+                row_checker = []
                 count = 0
-                if row.to_list().count(row[0]) == len(row):
-                    last_symbol = row[0]
+                j = set(row.to_list())
+                set_checker = []
+                empty_checker = False
+                for curr_j_s in j:
+                    if curr_j_s == "-":
+                        empty_checker = True
+                    else:
+                        set_checker.append(curr_j_s)
+                if len(set_checker) == 1:
+                    last_symbol = set_checker[0]
                     count += 1
                     last_index = i
+                    row_checker = row.to_list()
         
             else:
-                if row[0] == last_symbol:
-                    if row.to_list().count(row[0]) == len(row):
-                        count += 1
-                    else:
-                        if count >= 11:
-                            index_list.append(last_index)
-                            count_list.append(count)
-                            symbol_list.append(last_symbol)
-                        last_index = 0
-                        last_symbol = "NO_SYMBOL_YET"
-                        count = 0
+                if row.to_list() == row_checker:
+                    count += 1
                 else:
                     if count >= 11:
                         index_list.append(last_index)
                         count_list.append(count)
                         symbol_list.append(last_symbol)
-                    last_symbol = "NO_SYMBOL_YET"
-                    count = 0
-                    last_index = 0
-            
+                        if empty_checker == True:
+                            indices = [str(k) for k, y in enumerate(row_checker) if y == "-"]
+                            index_of_partials.append("=".join(indices))
+                        else:
+                            index_of_partials.append(False)
+                    j = set(row.to_list())
+                    set_checker = []
+                    empty_checker = False
+                    for curr_j_s in j:
+                        if curr_j_s == "-":
+                            empty_checker = True
+                        else:
+                            set_checker.append(curr_j_s)
+                    if len(set_checker) == 1:
+                        last_symbol = set_checker[0]
+                        count = 1
+                        last_index = i
+                        row_checker = row.to_list()
+                    else:
+                        last_symbol = "NO_SYMBOL_YET"
+                        count = 0
+                        last_index = 0
+                        row_checker = []
+                        
             if i == total_rows:
                 if count >= 11:
                     index_list.append(last_index)
                     count_list.append(count)
                     symbol_list.append(last_symbol)
-                    
+                    if empty_checker == True:
+                        indices = [str(k) for k, y in enumerate(row_checker) if y == "-"]
+                        index_of_partials.append("=".join(indices))
+                    else:
+                        index_of_partials.append(False)
+        
                     
         drop_list = []
         for i, c in zip(index_list, count_list):
@@ -410,8 +437,11 @@ class TandemRepeatVisualizer:
         	x = [x for x in r]
         	drop_list = drop_list + x
         	
-        for i,s,c in zip(index_list, symbol_list, count_list):
-        	sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c)
+        for i,s,c,k in zip(index_list, symbol_list, count_list, index_of_partials):
+            if k == False:
+                sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c) + "-NIL"
+            else:
+                sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c) + "-" + str(k)
         
         sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
         sorted_aligned_labeled_repeats = df.transpose().to_numpy().tolist()
@@ -446,8 +476,12 @@ class TandemRepeatVisualizer:
                     # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
                     ###########################################################################
                     if "COMPRESS" in symbol:
-                        fcolor = self.symbol_to_color[symbol.split("-")[1]]
-                        compress_tag = "<- " + str(symbol.split("-")[2]) + " ->"
+                        if str(allele_index) == symbol.split("-")[3]:
+                            fcolor = (1, 1, 1, 1)
+                            compress_tag = False
+                        else:
+                            fcolor = self.symbol_to_color[symbol.split("-")[1]]
+                            compress_tag = "<- " + str(symbol.split("-")[2]) + " ->"
                     else:
                         fcolor = self.symbol_to_color[symbol]
                         compress_tag = False
