@@ -356,7 +356,10 @@ class TandemRepeatVisualizer:
         ##################################################################
         # Temporary insertion to compress sorted_aligned_labeled_repeats #
         ##################################################################
-        sorted_aligned_labeled_repeats_df = pd.DataFrame(sorted_aligned_labeled_repeats)
+        sorted_aligned_labeled_repeats_new = []
+        for item in sorted_aligned_labeled_repeats:
+                sorted_aligned_labeled_repeats_new.append(list(item))
+        sorted_aligned_labeled_repeats_df = pd.DataFrame(sorted_aligned_labeled_repeats_new)
         sorted_aligned_labeled_repeats_df = sorted_aligned_labeled_repeats_df.transpose()
 
         index_list = []
@@ -436,7 +439,7 @@ class TandemRepeatVisualizer:
         	r = range(i+1,i+c)
         	x = [x for x in r]
         	drop_list = drop_list + x
-        	
+        
         for i,s,c,k in zip(index_list, symbol_list, count_list, index_of_partials):
             if k == False:
                 sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c) + "-NIL"
@@ -444,7 +447,7 @@ class TandemRepeatVisualizer:
                 sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c) + "-" + str(k)
         
         sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
-        sorted_aligned_labeled_repeats = df.transpose().to_numpy().tolist()
+        sorted_aligned_labeled_repeats = sorted_aligned_labeled_repeats_df.transpose().to_numpy().tolist()
         compress_tag = False
         ##################################################################
         # Temporary insertion to compress sorted_aligned_labeled_repeats #
@@ -505,7 +508,7 @@ class TandemRepeatVisualizer:
                                                     hatch=hatch_pattern, ))
                     if compress_tag != False:
                         ax_main.annotate(compress_tag, (box_position[0] + (box_width / 2), box_position[1] + (box_height / 2)),
-                                        color = "w", weight = "bold", fontsize = int((box_height / 2) * 3), ha="center", va="center")
+                                        color = "w", weight = "bold", fontsize = int(box_height * 3), ha="center", va="center")
                     ###########################################################################
                     # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
                     ###########################################################################
