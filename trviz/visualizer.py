@@ -5,6 +5,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.ticker import IndexLocator
 import numpy as np
 import distinctipy
+import pandas as np
 
 from trviz.utils import PRIVATE_MOTIF_LABEL
 
@@ -233,7 +234,7 @@ class TandemRepeatVisualizer:
             sorted_sample_ids, sorted_aligned_labeled_repeats = sample_ids, aligned_labeled_repeats
             if debug:
                 print("No clustering")
-
+        
         # Set symbol to color map
         self.set_symbol_to_motif_map(aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
                                      symbol_to_motif)
@@ -351,6 +352,74 @@ class TandemRepeatVisualizer:
 
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
                     private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids):
+
+        ##################################################################
+        # Temporary insertion to compress sorted_aligned_labeled_repeats #
+        ##################################################################
+        sorted_aligned_labeled_repeats_df = pd.DataFrame(sorted_aligned_labeled_repeats)
+        sorted_aligned_labeled_repeats_df = sorted_aligned_labeled_repeats_df.transpose()
+
+        index_list = []
+        count_list = []
+        symbol_list = []
+        last_symbol = "NO_SYMBOL_YET"
+        count = 0
+        last_index = 0
+        total_rows = sorted_aligned_labeled_repeats_df.shape[0] - 1
+        
+        for i, row in sorted_aligned_labeled_repeats_df.iterrows():
+            
+            if last_symbol == "NO_SYMBOL_YET":
+                count = 0
+                if row.to_list().count(row[0]) == len(row):
+                    last_symbol = row[0]
+                    count += 1
+                    last_index = i
+        
+            else:
+                if row[0] == last_symbol:
+                    if row.to_list().count(row[0]) == len(row):
+                        count += 1
+                    else:
+                        if count >= 11:
+                            index_list.append(last_index)
+                            count_list.append(count)
+                            symbol_list.append(last_symbol)
+                        last_index = 0
+                        last_symbol = "NO_SYMBOL_YET"
+                        count = 0
+                else:
+                    if count >= 11:
+                        index_list.append(last_index)
+                        count_list.append(count)
+                        symbol_list.append(last_symbol)
+                    last_symbol = "NO_SYMBOL_YET"
+                    count = 0
+                    last_index = 0
+            
+            if i == total_rows:
+                if count >= 11:
+                    index_list.append(last_index)
+                    count_list.append(count)
+                    symbol_list.append(last_symbol)
+                    
+                    
+        drop_list = []
+        for i, c in zip(index_list, count_list):
+        	r = range(i+1,i+c)
+        	x = [x for x in r]
+        	drop_list = drop_list + x
+        	
+        for i,s,c in zip(index_list, symbol_list, count_list):
+        	sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c)
+        
+        sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
+        sorted_aligned_labeled_repeats = df.transpose().to_numpy().tolist()
+        compress_tag = False
+        ##################################################################
+        # Temporary insertion to compress sorted_aligned_labeled_repeats #
+        ##################################################################
+                        
         box_height = 1.0
         box_width = 1.0
         for allele_index, allele in enumerate(sorted_aligned_labeled_repeats):
@@ -373,18 +442,44 @@ class TandemRepeatVisualizer:
                         motif_mark = motif_marks[sorted_sample_ids[allele_index]][motif_index]
                         if motif_mark == 'I':  # introns
                             hatch_pattern = 'xxx'
-                    fcolor = self.symbol_to_color[symbol]
+                    ###########################################################################
+                    # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
+                    ###########################################################################
+                    if "COMPRESS" in symbol:
+                        fcolor = self.symbol_to_color[symbol.split("-")[1]]
+                        compress_tag = "<- " + str(symbol.split("-")[2]) + " ->"
+                    else:
+                        fcolor = self.symbol_to_color[symbol]
+                        compress_tag = False
+                    ###########################################################################
+                    # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
+                    ###########################################################################
+                    # fcolor = self.symbol_to_color[symbol]
                     motif_index += 1
 
                 if symbol == PRIVATE_MOTIF_LABEL:
                     fcolor = private_motif_color
 
                 if motif_style == "box":
+                    ###########################################################################
+                    # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
+                    ###########################################################################
                     ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
                                                     linewidth=box_line_width + 0.1,
                                                     facecolor=fcolor,
                                                     edgecolor=fcolor if no_edge else "white",
                                                     hatch=hatch_pattern, ))
+                    if compress_tag != False:
+                        ax_main.annotate(compress_tag, (box_position[0] + (box_width / 2), box_position[1] + (box_height / 2)),
+                                        color = "w", weight = "bold", fontsize = int((box_height / 2) * 3), ha="center", va="center")
+                    ###########################################################################
+                    # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
+                    ###########################################################################
+                    #ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
+                    #                                linewidth=box_line_width + 0.1,
+                    #                                facecolor=fcolor,
+                    #                                edgecolor=fcolor if no_edge else "white",
+                    #                                hatch=hatch_pattern, ))
                 elif motif_style == "arrow":
                     ax_main.add_patch(plt.Arrow(box_position[0], box_position[1] + box_height / 2, box_width, 0,
                                                 width=1,
