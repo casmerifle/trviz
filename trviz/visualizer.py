@@ -496,7 +496,7 @@ class TandemRepeatVisualizer:
                             compress_tag = False
                         else:
                             fcolor = self.symbol_to_color[symbol.split("-")[1]]
-                            compress_tag = "<- " + str(symbol.split("-")[2]) + " ->"
+                            compress_tag = "<" + str(symbol.split("-")[2]) + ">"
                     else:
                         fcolor = self.symbol_to_color[symbol]
                         compress_tag = False
