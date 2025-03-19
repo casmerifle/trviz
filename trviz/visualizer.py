@@ -240,7 +240,7 @@ class TandemRepeatVisualizer:
                                      symbol_to_motif)
 
         self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
-                         sorted_aligned_labeled_repeats, sorted_sample_ids, figure_size, dpi)
+                         sorted_aligned_labeled_repeats, sorted_sample_ids, figure_size, dpi, fig)
 
         # Add another axis for sample labels
         self.add_label_color_axis(aligned_labeled_repeats, allele_as_row, ax_main, box_line_width, sample_to_label,
@@ -351,7 +351,7 @@ class TandemRepeatVisualizer:
             ax_main.set_ylabel(ylabel, fontsize=ylabel_size)
 
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
-                    private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids, figure_size, dpi):
+                    private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids, figure_size, dpi, fig):
 
         ##################################################################
         # Temporary insertion to compress sorted_aligned_labeled_repeats #
