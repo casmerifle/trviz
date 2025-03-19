@@ -200,22 +200,6 @@ class TandemRepeatVisualizer:
         :param colored_motifs: a list of motifs to be colored. Other motifs will be colored in grey.
         :param debug: if true, print verbose information.
         """
-
-        max_repeat_count = len(aligned_labeled_repeats[0])
-        if figure_size is None:
-            h = len(sample_ids) // 5 + 2 if len(sample_ids) > 50 else 5
-            w = max_repeat_count // 5 + 2 if max_repeat_count > 50 else max_repeat_count // 5 + 2
-            if not allele_as_row:
-                w, h = h, w
-            if h * dpi > 2**16:
-                h = 2**15 // dpi * 0.75  # "Weight and Height must be less than 2^16"
-            fig, ax_main = plt.subplots(figsize=(w, h))
-        else:
-            fig, ax_main = plt.subplots(figsize=figure_size)  # width and height in inch
-
-        if title is not None:
-            ax_main.set_title(title)
-
         # Sort by clustering and add dendrogram if needed
         if sort_by_clustering:
             if symbol_to_motif is None:
@@ -234,6 +218,121 @@ class TandemRepeatVisualizer:
             sorted_sample_ids, sorted_aligned_labeled_repeats = sample_ids, aligned_labeled_repeats
             if debug:
                 print("No clustering")
+
+        ##################################################################
+        # Temporary insertion to compress sorted_aligned_labeled_repeats #
+        ##################################################################
+        sorted_aligned_labeled_repeats_new = []
+        for item in sorted_aligned_labeled_repeats:
+                sorted_aligned_labeled_repeats_new.append(list(item))
+        sorted_aligned_labeled_repeats_df = pd.DataFrame(sorted_aligned_labeled_repeats_new)
+        sorted_aligned_labeled_repeats_df = sorted_aligned_labeled_repeats_df.transpose()
+
+        index_list = []
+        count_list = []
+        symbol_list = []
+        last_symbol = "NO_SYMBOL_YET"
+        count = 0
+        last_index = 0
+        total_rows = sorted_aligned_labeled_repeats_df.shape[0] - 1
+        index_of_partials = []
+        
+        for i, row in sorted_aligned_labeled_repeats_df.iterrows():
+            
+            if last_symbol == "NO_SYMBOL_YET":
+                row_checker = []
+                count = 0
+                j = set(row.to_list())
+                set_checker = []
+                empty_checker = False
+                for curr_j_s in j:
+                    if curr_j_s == "-":
+                        empty_checker = True
+                    else:
+                        set_checker.append(curr_j_s)
+                if len(set_checker) == 1:
+                    last_symbol = set_checker[0]
+                    count += 1
+                    last_index = i
+                    row_checker = row.to_list()
+        
+            else:
+                if row.to_list() == row_checker:
+                    count += 1
+                else:
+                    if count >= 11:
+                        index_list.append(last_index)
+                        count_list.append(count)
+                        symbol_list.append(last_symbol)
+                        if empty_checker == True:
+                            indices = [str(k) for k, y in enumerate(row_checker) if y == "-"]
+                            index_of_partials.append("=".join(indices))
+                        else:
+                            index_of_partials.append(False)
+                    j = set(row.to_list())
+                    set_checker = []
+                    empty_checker = False
+                    for curr_j_s in j:
+                        if curr_j_s == "-":
+                            empty_checker = True
+                        else:
+                            set_checker.append(curr_j_s)
+                    if len(set_checker) == 1:
+                        last_symbol = set_checker[0]
+                        count = 1
+                        last_index = i
+                        row_checker = row.to_list()
+                    else:
+                        last_symbol = "NO_SYMBOL_YET"
+                        count = 0
+                        last_index = 0
+                        row_checker = []
+                        
+            if i == total_rows:
+                if count >= 11:
+                    index_list.append(last_index)
+                    count_list.append(count)
+                    symbol_list.append(last_symbol)
+                    if empty_checker == True:
+                        indices = [str(k) for k, y in enumerate(row_checker) if y == "-"]
+                        index_of_partials.append("=".join(indices))
+                    else:
+                        index_of_partials.append(False)
+        
+                    
+        drop_list = []
+        for i, c in zip(index_list, count_list):
+        	r = range(i+1,i+c)
+        	x = [x for x in r]
+        	drop_list = drop_list + x
+        
+        for i,s,c,k in zip(index_list, symbol_list, count_list, index_of_partials):
+            if k == False:
+                sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c) + "-NIL"
+            else:
+                sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c) + "-" + str(k)
+        
+        sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
+        sorted_aligned_labeled_repeats = sorted_aligned_labeled_repeats_df.transpose().to_numpy().tolist()
+        compress_tag = False
+        ##################################################################
+        # Temporary insertion to compress sorted_aligned_labeled_repeats #
+        ##################################################################
+
+        max_repeat_count = len(sorted_aligned_labeled_repeats[0])
+        if figure_size is None:
+            h = len(sample_ids) // 5 + 2 if len(sample_ids) > 50 else 5
+            w = max_repeat_count // 5 + 2 if max_repeat_count > 50 else max_repeat_count // 5 + 2
+            if not allele_as_row:
+                w, h = h, w
+            if h * dpi > 2**16:
+                h = 2**15 // dpi * 0.75  # "Weight and Height must be less than 2^16"
+            fig, ax_main = plt.subplots(figsize=(w, h))
+        else:
+            fig, ax_main = plt.subplots(figsize=figure_size)  # width and height in inch
+
+        if title is not None:
+            ax_main.set_title(title)
         
         # Set symbol to color map
         self.set_symbol_to_motif_map(aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
@@ -352,106 +451,6 @@ class TandemRepeatVisualizer:
 
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
                     private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids):
-
-        ##################################################################
-        # Temporary insertion to compress sorted_aligned_labeled_repeats #
-        ##################################################################
-        sorted_aligned_labeled_repeats_new = []
-        for item in sorted_aligned_labeled_repeats:
-                sorted_aligned_labeled_repeats_new.append(list(item))
-        sorted_aligned_labeled_repeats_df = pd.DataFrame(sorted_aligned_labeled_repeats_new)
-        sorted_aligned_labeled_repeats_df = sorted_aligned_labeled_repeats_df.transpose()
-
-        index_list = []
-        count_list = []
-        symbol_list = []
-        last_symbol = "NO_SYMBOL_YET"
-        count = 0
-        last_index = 0
-        total_rows = sorted_aligned_labeled_repeats_df.shape[0] - 1
-        index_of_partials = []
-        
-        for i, row in sorted_aligned_labeled_repeats_df.iterrows():
-            
-            if last_symbol == "NO_SYMBOL_YET":
-                row_checker = []
-                count = 0
-                j = set(row.to_list())
-                set_checker = []
-                empty_checker = False
-                for curr_j_s in j:
-                    if curr_j_s == "-":
-                        empty_checker = True
-                    else:
-                        set_checker.append(curr_j_s)
-                if len(set_checker) == 1:
-                    last_symbol = set_checker[0]
-                    count += 1
-                    last_index = i
-                    row_checker = row.to_list()
-        
-            else:
-                if row.to_list() == row_checker:
-                    count += 1
-                else:
-                    if count >= 11:
-                        index_list.append(last_index)
-                        count_list.append(count)
-                        symbol_list.append(last_symbol)
-                        if empty_checker == True:
-                            indices = [str(k) for k, y in enumerate(row_checker) if y == "-"]
-                            index_of_partials.append("=".join(indices))
-                        else:
-                            index_of_partials.append(False)
-                    j = set(row.to_list())
-                    set_checker = []
-                    empty_checker = False
-                    for curr_j_s in j:
-                        if curr_j_s == "-":
-                            empty_checker = True
-                        else:
-                            set_checker.append(curr_j_s)
-                    if len(set_checker) == 1:
-                        last_symbol = set_checker[0]
-                        count = 1
-                        last_index = i
-                        row_checker = row.to_list()
-                    else:
-                        last_symbol = "NO_SYMBOL_YET"
-                        count = 0
-                        last_index = 0
-                        row_checker = []
-                        
-            if i == total_rows:
-                if count >= 11:
-                    index_list.append(last_index)
-                    count_list.append(count)
-                    symbol_list.append(last_symbol)
-                    if empty_checker == True:
-                        indices = [str(k) for k, y in enumerate(row_checker) if y == "-"]
-                        index_of_partials.append("=".join(indices))
-                    else:
-                        index_of_partials.append(False)
-        
-                    
-        drop_list = []
-        for i, c in zip(index_list, count_list):
-        	r = range(i+1,i+c)
-        	x = [x for x in r]
-        	drop_list = drop_list + x
-        
-        for i,s,c,k in zip(index_list, symbol_list, count_list, index_of_partials):
-            if k == False:
-                sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c) + "-NIL"
-            else:
-                sorted_aligned_labeled_repeats_df.iloc[[i]] = "COMPRESS-" + s + "-" + str(c) + "-" + str(k)
-        
-        sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
-        sorted_aligned_labeled_repeats = sorted_aligned_labeled_repeats_df.transpose().to_numpy().tolist()
-        compress_tag = False
-        ##################################################################
-        # Temporary insertion to compress sorted_aligned_labeled_repeats #
-        ##################################################################
                         
         box_height = 1.0
         box_width = 1.0
