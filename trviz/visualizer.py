@@ -530,20 +530,50 @@ class TandemRepeatVisualizer:
                     #                                edgecolor=fcolor if no_edge else "white",
                     #                                hatch=hatch_pattern, ))
                 elif motif_style == "arrow":
+                    ###########################################################################
+                    # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
+                    ###########################################################################
                     ax_main.add_patch(plt.Arrow(box_position[0], box_position[1] + box_height / 2, box_width, 0,
-                                                width=1,
-                                                linewidth=box_line_width + 0.1,
-                                                facecolor=fcolor,
-                                                edgecolor=fcolor if no_edge else "white",
-                                                hatch=hatch_pattern, ))
+                                                    width=1,
+                                                    linewidth=box_line_width + 0.1,
+                                                    facecolor=fcolor,
+                                                    edgecolor=fcolor if no_edge else "white",
+                                                    hatch=hatch_pattern, ))
+                    if compress_tag != False:
+                        ax_main.annotate(compress_tag, (box_position[0] + (box_width / 2), box_position[1] + (box_height / 2)),
+                                        color = "w", weight = "bold", fontsize = int(box_height * 3), ha="center", va="center")
+                    ###########################################################################
+                    # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
+                    ###########################################################################
+                    #ax_main.add_patch(plt.Arrow(box_position[0], box_position[1] + box_height / 2, box_width, 0,
+                    #                            width=1,
+                    #                            linewidth=box_line_width + 0.1,
+                    #                            facecolor=fcolor,
+                    #                            edgecolor=fcolor if no_edge else "white",
+                    #                            hatch=hatch_pattern, ))
 
                 elif motif_style == "triangle":
+                    ###########################################################################
+                    # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
+                    ###########################################################################
                     ax_main.add_patch(plt.Polygon([(box_position[0], box_position[1]),
                                                    (box_position[0], box_position[1] + box_height),
                                                    (box_position[0] + box_width, box_position[1] + box_height / 2)],
                                                   color=fcolor,
                                                   linewidth=box_line_width + 0.1,
-                                                  ))
+                                                 ))
+                    if compress_tag != False:
+                        ax_main.annotate(compress_tag, (box_position[0] + (box_width / 2), box_position[1] + (box_height / 2)),
+                                        color = "w", weight = "bold", fontsize = int(box_height * 3), ha="center", va="center")
+                    ###########################################################################
+                    # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
+                    ###########################################################################
+                    #ax_main.add_patch(plt.Polygon([(box_position[0], box_position[1]),
+                    #                               (box_position[0], box_position[1] + box_height),
+                    #                               (box_position[0] + box_width, box_position[1] + box_height / 2)],
+                    #                              color=fcolor,
+                    #                              linewidth=box_line_width + 0.1,
+                    #                              ))
                 else:
                     raise ValueError(f"Unknown motif style: {motif_style}")
 
