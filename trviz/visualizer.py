@@ -460,9 +460,7 @@ class TandemRepeatVisualizer:
                 h = 2**15 // dpi * 0.75  # "Weight and Height must be less than 2^16"
             #fig, ax_main = plt.subplots(figsize=(w, h))
             fig.set_size_inches(w, h)
-        else:
-            #fig, ax_main = plt.subplots(figsize=figure_size)
-            fig.set_size_inches(figure_size)
+            ax.set_size_inches(w, h)
         ##################################################################
         # Temporary insertion to compress sorted_aligned_labeled_repeats #
         ##################################################################
