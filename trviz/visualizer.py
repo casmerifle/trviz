@@ -275,7 +275,7 @@ class TandemRepeatVisualizer:
 
         if ((adjacent_methylation_flag != False) and (adjacent_methylation_flag != "False")):
             self.draw_methylation_marks(ax_main, box_line_width, no_edge, allele_as_row, sorted_sample_ids, sorted_aligned_labeled_repeats,
-                                       methylation_sample_data, methylation_sample_ids, methylation_region_coords):
+                                       methylation_sample_data, methylation_sample_ids, methylation_region_coords)
 
         mapped_dict = self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
                          sorted_aligned_labeled_repeats, sorted_sample_ids, methylation_upstream_total)
