@@ -463,6 +463,8 @@ class TandemRepeatVisualizer:
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
                     private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids):
 
+        color_key = []
+        symbol_key = []
         compress_tag = False
         box_height = 1.0
         box_width = 1.0
@@ -496,6 +498,9 @@ class TandemRepeatVisualizer:
                         else:
                             fcolor = self.symbol_to_color[symbol.split("-")[1]]
                             compress_tag = "<" + str(symbol.split("-")[2]) + ">"
+                            if symbol.split("-")[1] not in symbol_key:
+                                symbol_key.append(symbol.split("-")[1])
+                                color_key.append(fcolor)
                     else:
                         fcolor = self.symbol_to_color[symbol]
                         compress_tag = False
@@ -575,6 +580,9 @@ class TandemRepeatVisualizer:
                     #                              ))
                 else:
                     raise ValueError(f"Unknown motif style: {motif_style}")
+
+        mapped_dict = dict(zip(symbol_key, color_key))
+        return mapped_dict
 
     def add_label_color_axis(self, aligned_labeled_repeats, allele_as_row, ax_main, box_line_width, sample_to_label,
                              sorted_aligned_labeled_repeats, sorted_sample_ids, xlabel_rotation, xlabel_size,
