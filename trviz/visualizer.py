@@ -260,7 +260,7 @@ class TandemRepeatVisualizer:
         max_repeat_count = len(sorted_aligned_labeled_repeats[0])
         if figure_size is None:
             h = len(sorted_sample_ids) // 5 + 2 if len(sorted_sample_ids) > 50 else 5
-            w = max_repeat_count // 5 + 2 + (methylation_length_total // (1/36)) if max_repeat_count > 50 else max_repeat_count // 5 + 2 + (methylation_length_total // (1/36))
+            w = max_repeat_count // 5 + 2 + (methylation_length_total // 180) if max_repeat_count > 50 else max_repeat_count // 5 + 2 + (methylation_length_total // 180)
             if not allele_as_row:
                 w, h = h, w
             if h * dpi > 2**16:
