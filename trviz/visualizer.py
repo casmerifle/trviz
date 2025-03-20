@@ -3,7 +3,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.ticker import IndexLocator
-import matplotlib.colormaps as clmp
+import matplotlib as mpl
 import numpy as np
 import distinctipy
 import pandas as pd
@@ -568,7 +568,7 @@ class TandemRepeatVisualizer:
 
                 for coordinate_line in methylation_current_sample_data:
                     if int(coordinate_line.split("\t")[0]) == int(current_coordinate_abs):
-                        fcolor = clmp["bwr"](float(coordinate_line[10])/100) # get color from blue (0) to red (1)
+                        fcolor = mpl.colormaps["bwr"](float(coordinate_line[10])/100) # get color from blue (0) to red (1)
                         ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
                                                         linewidth=box_line_width + 0.1,
                                                         facecolor=fcolor,
@@ -583,7 +583,7 @@ class TandemRepeatVisualizer:
 
                 for coordinate_line in methylation_current_sample_data:
                     if int(coordinate_line.split("\t")[0]) == int(current_coordinate_abs):
-                        fcolor = clmp["bwr"](float(coordinate_line[10])/100) # get color from blue (0) to red (1)
+                        fcolor = mpl.colormaps["bwr"](float(coordinate_line[10])/100) # get color from blue (0) to red (1)
                         ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
                                                         linewidth=box_line_width + 0.1,
                                                         facecolor=fcolor,
