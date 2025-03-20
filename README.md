@@ -1,3 +1,5 @@
+Note: This repo is a modified version of TRviz with added compression and slight alterations in visualization. It still needs debugging.
+
 ```
   _______ _______      _______ ______
  |__   __|  __ \ \    / /_   _|___  /
