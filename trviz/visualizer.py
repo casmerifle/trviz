@@ -3,6 +3,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.ticker import IndexLocator
+import matplotlib.colormaps as mpl.clmp
 import numpy as np
 import distinctipy
 import pandas as pd
@@ -134,6 +135,9 @@ class TandemRepeatVisualizer:
                sort_by_clustering: bool = True,
                hide_dendrogram: bool = True,
                compression_flag = True,
+               adjacent_methylation_flag,
+               repeat_coord_start = 0,
+               repeat_coord_end = 0,
                sample_to_label: Dict[str, str] = None,
                motif_marks: Dict[str, str] = None,
                allele_as_row: bool = True,
@@ -176,6 +180,11 @@ class TandemRepeatVisualizer:
         :param sort_by_clustering: if true, sort the samples by clustering
         :param motif_marks: a dictionary mapping sample to motif marks
         :param hide_dendrogram: if true, hide the dendrogram
+        :param compression_flag: if true, compresses stretches of identical STRs in the sorted repeats
+        :param adjacent_methylation_flag: MANDATORY ARGUMENT (specify as the bool False if unsure); if demonstration of adjacent regions and their methylation is desired,
+                specify the filepath of a metadata .tsv file with the following three columns:
+                        (1) sample_id    (2) filepath_of_bedMethyl_file (output from ModKit2 / wf-human-variation pipeline) with only the relevant methylation regions    (3) chromosome of ROI in the format "chr1"
+                a red-blue heatmap of methylation will be generated in the final trplot()
         :param sample_to_label: sample to label dictionary (default is None)
         :param motif_marks: a dictionary mapping sample to motif marks
         :param allele_as_row: if true, plot allele as row (default is true)
@@ -201,6 +210,16 @@ class TandemRepeatVisualizer:
         :param colored_motifs: a list of motifs to be colored. Other motifs will be colored in grey.
         :param debug: if true, print verbose information.
         """
+
+        methylation_length_total = 0
+        methylation_upstream_total = 0
+        if ((adjacent_methylation_flag != False) and (adjacent_methylation_flag != "False")):
+            if ((repeat_coord_start == 0) or (repeat_coord_end == 0)):
+                raise ValueError("Error: Please specify a repeat_coord_start and repeat_coord_end. This region should be the repeat region with the region of interest which will NOT have methylation analyzed on the basis of poor alignment.")
+            else:
+                methylation_sample_data, methylation_sample_ids, methylation_region_coords = self.generate_adjacent_data(adjacent_methylation_flag, repeat_coord_start, repeat_coord_end)
+                methylation_length_total = abs(methylation_region_coords[0][0] - methylation_region_coords[1][1])
+                methylation_upstream_total = abs(methylation_region_coords[0][0] - methylation_region_coords[0][1])
 
         max_repeat_count = len(aligned_labeled_repeats[0])
         if figure_size is None:
@@ -242,7 +261,7 @@ class TandemRepeatVisualizer:
         max_repeat_count = len(sorted_aligned_labeled_repeats[0])
         if figure_size is None:
             h = len(sorted_sample_ids) // 5 + 2 if len(sorted_sample_ids) > 50 else 5
-            w = max_repeat_count // 5 + 2 if max_repeat_count > 50 else max_repeat_count // 5 + 2
+            w = max_repeat_count // 5 + 2 + (methylation_length_total // 180) if max_repeat_count > 50 else max_repeat_count // 5 + 2 + (methylation_length_total // 180)
             if not allele_as_row:
                 w, h = h, w
             if h * dpi > 2**16:
@@ -254,8 +273,12 @@ class TandemRepeatVisualizer:
         self.set_symbol_to_motif_map(aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
                                      symbol_to_motif)
 
+        if ((adjacent_methylation_flag != False) and (adjacent_methylation_flag != "False")):
+            self.draw_methylation_marks(ax_main, box_line_width, no_edge, allele_as_row, sorted_sample_ids, sorted_aligned_labeled_repeats,
+                                       methylation_sample_data, methylation_sample_ids, methylation_region_coords):
+
         mapped_dict = self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
-                         sorted_aligned_labeled_repeats, sorted_sample_ids)
+                         sorted_aligned_labeled_repeats, sorted_sample_ids, methylation_upstream_total)
 
         # Add another axis for sample labels
         self.add_label_color_axis(aligned_labeled_repeats, allele_as_row, ax_main, box_line_width, sample_to_label,
@@ -287,6 +310,61 @@ class TandemRepeatVisualizer:
             plt.show()
         plt.close(fig)
         return mapped_dict
+
+    def generate_adjacent_data(self, adjacent_methylation_flag, repeat_coord_start, repeat_coord_end):
+        try:
+            temporary_placeholder = int(repeat_coord_start)
+            temporary_placeholder = int(repeat_coord_end)
+        except:
+            ValueError("repeat_coord_start or repeat_coord_end is not of the right type (integer). Please use valid arguments and try again.")
+        
+        f = open(adjacent_methylation_flag, "r")
+        filelines = f.readlines()
+        f.close()
+
+        methylation_sample_ids = []
+        methylation_sample_fps = []
+        methylation_sample_chrs = []
+        methylation_sample_data = []
+
+        for lines in filelines:
+            line = lines.split("\t")
+            methylation_sample_ids.append(line[0])
+            methylation_sample_fps.append(line[1])
+            methylation_sample_chrs.append(line[2])
+
+        ### Establish overall region covered by all bedMethyl files ###
+        ### We operate under the assumption that the repeat region is within the bedMethyl region ###
+        ### Moreover, it is unclear how we can map methylation within repeats to genomic coordinates (and vice versa) ###
+        ### Therefore, we will operate with two regions: upstream and downstream ###
+        upstream_start = 250000000
+        upstream_end = int(repeat_coord_start)
+        downstream_start = int(repeat_coord_end)
+        downstream_end = 0
+        
+        for id, fp, chr in zip(methylation_sample_ids, methylation_sample_fps, methylation_sample_chrs):
+            f = open(fp, "r")
+            filelines = f.readlines()
+            f.close()
+
+            ### We require the chr, the coords and the %mod
+            methylation_5mC_lines = []
+            methylation_5hmC_lines = []
+
+            for lines in filelines:
+                line = lines.split("\t")
+                if chr in line[0]:
+                    if int(line[4]) >= 10:
+                        if line[3] == "m":
+                            methylation_5mC_lines.append(line)
+                        elif line[3] == "h":
+                            methylation_5hmC_lines.append(line)
+                    downstream_end = max(line[2], downstream_end)
+                    upstream_start = min(line[1], upstream_start)
+
+            methylation_sample_data.append([methylation_5mC_lines, methylation_5hmC_lines])
+
+    return methylation_sample_data, methylation_sample_ids, [[upstream_start, upstream_end], [downstream_start, downstream_end]]
 
     def compress_motifs(self, sorted_aligned_labeled_repeats):
         sorted_aligned_labeled_repeats_new = []
@@ -461,8 +539,58 @@ class TandemRepeatVisualizer:
         if ylabel is not None:
             ax_main.set_ylabel(ylabel, fontsize=ylabel_size)
 
+    def draw_methylation_marks(self, ax_main, box_line_width, no_edge, allele_as_row, sorted_sample_ids,
+                               sorted_aligned_labeled_repeats, methylation_sample_data, methylation_sample_ids, methylation_region_coords):
+
+        ### We operate under the assumption that methylation is consistent across both alleles ###
+        ### Map methylation_sample_data to sorted_samples_ids ###
+                                   
+        box_height = 1.0 / 36
+        box_width = 1.0 / 36
+        for allele_index, (allele, SV_sample_id) in enumerate(zip(sorted_aligned_labeled_repeats, sorted_sample_ids)):
+            motif_index = 0
+            # each column is an allele
+            box_position = [allele_index, 0]
+            # use SV_sample_id to reference methylation_sample_ids and find index for methylation_sample_data
+            methylation_current_sample_data = methylation_sample_data[methylation_sample_ids.index(SV_sample_id.split(".")[0])]
+            
+            if allele_as_row:
+                box_position = [0, allele_index]
+
+            final_coordinate_index = 0
+            for coordinate_index in range(abs(methylation_region_coords[0][0] - methylation_region_coords[0][1])):
+                final_coordinate_index = coordinate_index
+                current_coordinate_abs = coordinate_index + methylation_region_coords[0][0]
+                if allele_as_row:
+                    box_position[0] = box_width * coordinate_index  # move x position
+                else:
+                    box_position[1] = box_height * coordinate_index
+
+                for coordinate_line in methylation_current_sample_data:
+                    if int(coordinate_line.split("\t")[0]) == int(current_coordinate_abs):
+                        fcolor = mpl.clmp["bwr"](float(coordinate_line[10])/100) # get color from blue (0) to red (1)
+                        ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
+                                                        linewidth=box_line_width + 0.1,
+                                                        facecolor=fcolor,
+                                                        edgecolor=fcolor if no_edge else "white",))
+
+            for coordinate_index in range(abs(methylation_region_coords[1][0] - methylation_region_coords[1][1])):
+                current_coordinate_abs = coordinate_index + methylation_region_coords[1][0]
+                if allele_as_row:
+                    box_position[0] = (box_width * (coordinate_index + final_coordinate_index)) + (len(sorted_aligned_labeled_repeats[0]) // 5)  # move x position
+                else:
+                    box_position[1] = (box_height * (coordinate_index + final_coordinate_index)) + (len(sorted_aligned_labeled_repeats[0]) // 5)
+
+                for coordinate_line in methylation_current_sample_data:
+                    if int(coordinate_line.split("\t")[0]) == int(current_coordinate_abs):
+                        fcolor = mpl.clmp["bwr"](float(coordinate_line[10])/100) # get color from blue (0) to red (1)
+                        ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
+                                                        linewidth=box_line_width + 0.1,
+                                                        facecolor=fcolor,
+                                                        edgecolor=fcolor if no_edge else "white",))
+
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
-                    private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids):
+                    private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids, methylation_upstream_total):
 
         color_key = []
         symbol_key = []
@@ -478,9 +606,9 @@ class TandemRepeatVisualizer:
 
             for box_index, symbol in enumerate(allele):
                 if allele_as_row:
-                    box_position[0] = box_width * box_index  # move x position
+                    box_position[0] = (box_width * box_index) + methylation_upstream_total  # move x position
                 else:
-                    box_position[1] = box_height * box_index
+                    box_position[1] = (box_height * box_index) + methylation_upstream_total
                 hatch_pattern = None
                 if symbol == '-':  # For gaps, color them as white blocks
                     fcolor = (1, 1, 1, 1)
