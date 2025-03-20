@@ -355,9 +355,9 @@ class TandemRepeatVisualizer:
                 if chr.strip() in line[0]:
                     if int(line[4]) >= 10:
                         if line[3] == "m":
-                            methylation_5mC_lines.append(line)
+                            methylation_5mC_lines.append(lines)
                         elif line[3] == "h":
-                            methylation_5hmC_lines.append(line)
+                            methylation_5hmC_lines.append(lines)
                     downstream_end = max(int(line[2]), downstream_end)
                     upstream_start = min(int(line[1]), upstream_start)
 
