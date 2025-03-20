@@ -122,6 +122,7 @@ class TandemRepeatVisualizer:
         plt.close(fig)
 
     def trplot(self,
+               adjacent_methylation_flag,
                aligned_labeled_repeats: List[str],
                sample_ids: List[str],
                figure_size: Tuple[int, int] = None,
@@ -135,7 +136,6 @@ class TandemRepeatVisualizer:
                sort_by_clustering: bool = True,
                hide_dendrogram: bool = True,
                compression_flag = True,
-               adjacent_methylation_flag,
                repeat_coord_start = 0,
                repeat_coord_end = 0,
                sample_to_label: Dict[str, str] = None,
@@ -167,6 +167,10 @@ class TandemRepeatVisualizer:
         A distinct color is assigned to each motif.
         For private motifs (with low frequency), the same color (in black by default) may be assigned.
 
+        :param adjacent_methylation_flag: MANDATORY ARGUMENT (specify as the bool False if unsure); if demonstration of adjacent regions and their methylation is desired,
+                specify the filepath of a metadata .tsv file with the following three columns:
+                        (1) sample_id    (2) filepath_of_bedMethyl_file (output from ModKit2 / wf-human-variation pipeline) with only the relevant methylation regions    (3) chromosome of ROI in the format "chr1"
+                a red-blue heatmap of methylation will be generated in the final trplot()
         :param aligned_labeled_repeats: aligned and encoded tandem repeat sequences.
         :param sample_ids: sample IDs
         :param figure_size: figure size
@@ -181,10 +185,6 @@ class TandemRepeatVisualizer:
         :param motif_marks: a dictionary mapping sample to motif marks
         :param hide_dendrogram: if true, hide the dendrogram
         :param compression_flag: if true, compresses stretches of identical STRs in the sorted repeats
-        :param adjacent_methylation_flag: MANDATORY ARGUMENT (specify as the bool False if unsure); if demonstration of adjacent regions and their methylation is desired,
-                specify the filepath of a metadata .tsv file with the following three columns:
-                        (1) sample_id    (2) filepath_of_bedMethyl_file (output from ModKit2 / wf-human-variation pipeline) with only the relevant methylation regions    (3) chromosome of ROI in the format "chr1"
-                a red-blue heatmap of methylation will be generated in the final trplot()
         :param sample_to_label: sample to label dictionary (default is None)
         :param motif_marks: a dictionary mapping sample to motif marks
         :param allele_as_row: if true, plot allele as row (default is true)
