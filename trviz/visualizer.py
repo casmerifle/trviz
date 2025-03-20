@@ -254,7 +254,7 @@ class TandemRepeatVisualizer:
         self.set_symbol_to_motif_map(aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
                                      symbol_to_motif)
 
-        self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
+        mapped_dict = self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
                          sorted_aligned_labeled_repeats, sorted_sample_ids)
 
         # Add another axis for sample labels
@@ -286,6 +286,7 @@ class TandemRepeatVisualizer:
         if show_figure:
             plt.show()
         plt.close(fig)
+        return mapped_dict
 
     def compress_motifs(self, sorted_aligned_labeled_repeats):
         sorted_aligned_labeled_repeats_new = []
