@@ -505,6 +505,9 @@ class TandemRepeatVisualizer:
                     else:
                         fcolor = self.symbol_to_color[symbol]
                         compress_tag = False
+                        if symbol.split("-")[1] not in symbol_key:
+                            symbol_key.append(symbol)
+                            color_key.append(fcolor)
                     ###########################################################################
                     # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
                     ###########################################################################
