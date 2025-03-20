@@ -566,7 +566,7 @@ class TandemRepeatVisualizer:
                 else:
                     box_position[1] = box_height * coordinate_index
 
-                for coordinate_line in methylation_current_sample_data:
+                for coordinate_line in methylation_current_sample_data[0]: # use index 0 which is for 5mC, not 5hmC
                     if int(coordinate_line.split("\t")[0]) == int(current_coordinate_abs):
                         fcolor = mpl.colormaps["bwr"](float(coordinate_line[10])/100) # get color from blue (0) to red (1)
                         ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
