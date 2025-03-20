@@ -133,6 +133,7 @@ class TandemRepeatVisualizer:
                symbol_to_motif: Dict[str, str] = None,
                sort_by_clustering: bool = True,
                hide_dendrogram: bool = True,
+               compression_flag = True,
                sample_to_label: Dict[str, str] = None,
                motif_marks: Dict[str, str] = None,
                allele_as_row: bool = True,
@@ -235,10 +236,58 @@ class TandemRepeatVisualizer:
             if debug:
                 print("No clustering")
 
+        if compression_flag == True:
+            sorted_aligned_labeled_repeats = self.compress_motifs(sorted_aligned_labeled_repeats)
 
-        ##################################################################
-        # Temporary insertion to compress sorted_aligned_labeled_repeats #
-        ##################################################################
+        max_repeat_count = len(sorted_aligned_labeled_repeats[0])
+        if figure_size is None:
+            h = len(sorted_sample_ids) // 5 + 2 if len(sorted_sample_ids) > 50 else 5
+            w = max_repeat_count // 5 + 2 if max_repeat_count > 50 else max_repeat_count // 5 + 2
+            if not allele_as_row:
+                w, h = h, w
+            if h * dpi > 2**16:
+                h = 2**15 // dpi * 0.75  # "Weight and Height must be less than 2^16"
+            #fig, ax_main = plt.subplots(figsize=(w, h))
+            fig.set_size_inches(w, h)
+        
+        # Set symbol to color map
+        self.set_symbol_to_motif_map(aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
+                                     symbol_to_motif)
+
+        self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
+                         sorted_aligned_labeled_repeats, sorted_sample_ids)
+
+        # Add another axis for sample labels
+        self.add_label_color_axis(aligned_labeled_repeats, allele_as_row, ax_main, box_line_width, sample_to_label,
+                                  sorted_aligned_labeled_repeats, sorted_sample_ids, xlabel_rotation, xlabel_size,
+                                  ylabel_rotation, ylabel_size)
+
+        self.set_ticks_and_labels(aligned_labeled_repeats, allele_as_row, ax_main, hide_xticks, hide_yticks,
+                                  max_repeat_count, sample_to_label, sorted_aligned_labeled_repeats, sorted_sample_ids,
+                                  xlabel, xlabel_rotation, xlabel_size, xtick_offset, xtick_step, ylabel,
+                                  ylabel_rotation, ylabel_size, ytick_offset, ytick_step)
+
+        if frame_on is None:  # Set default
+            frame_on = {'top': False, 'bottom': True, 'right': False, 'left': True}
+
+        ax_main.spines['top'].set_visible(frame_on['top'])
+        ax_main.spines['right'].set_visible(frame_on['right'])
+        ax_main.spines['bottom'].set_visible(frame_on['bottom'])
+        ax_main.spines['left'].set_visible(frame_on['left'])
+
+        if output_name is not None:
+            if '.' not in output_name:
+                fig.savefig(f"{output_name}.pdf", dpi=dpi, bbox_inches='tight')
+            else:
+                fig.savefig(f"{output_name}", dpi=dpi, bbox_inches='tight')
+        else:
+            fig.savefig("test_trplot.png", dpi=dpi, bbox_inches='tight')
+
+        if show_figure:
+            plt.show()
+        plt.close(fig)
+
+    def compress_motifs(self, sorted_aligned_labeled_repeats):
         sorted_aligned_labeled_repeats_new = []
         for item in sorted_aligned_labeled_repeats:
                 sorted_aligned_labeled_repeats_new.append(list(item))
@@ -331,59 +380,8 @@ class TandemRepeatVisualizer:
         
         sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
         sorted_aligned_labeled_repeats = sorted_aligned_labeled_repeats_df.transpose().to_numpy().tolist()
-        compress_tag = False
-
-        max_repeat_count = len(sorted_aligned_labeled_repeats[0])
-        if figure_size is None:
-            h = len(sorted_sample_ids) // 5 + 2 if len(sorted_sample_ids) > 50 else 5
-            w = max_repeat_count // 5 + 2 if max_repeat_count > 50 else max_repeat_count // 5 + 2
-            if not allele_as_row:
-                w, h = h, w
-            if h * dpi > 2**16:
-                h = 2**15 // dpi * 0.75  # "Weight and Height must be less than 2^16"
-            #fig, ax_main = plt.subplots(figsize=(w, h))
-            fig.set_size_inches(w, h)
-        ##################################################################
-        # Temporary insertion to compress sorted_aligned_labeled_repeats #
-        ##################################################################
-        
-        # Set symbol to color map
-        self.set_symbol_to_motif_map(aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
-                                     symbol_to_motif)
-
-        self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
-                         sorted_aligned_labeled_repeats, sorted_sample_ids)
-
-        # Add another axis for sample labels
-        self.add_label_color_axis(aligned_labeled_repeats, allele_as_row, ax_main, box_line_width, sample_to_label,
-                                  sorted_aligned_labeled_repeats, sorted_sample_ids, xlabel_rotation, xlabel_size,
-                                  ylabel_rotation, ylabel_size)
-
-        self.set_ticks_and_labels(aligned_labeled_repeats, allele_as_row, ax_main, hide_xticks, hide_yticks,
-                                  max_repeat_count, sample_to_label, sorted_aligned_labeled_repeats, sorted_sample_ids,
-                                  xlabel, xlabel_rotation, xlabel_size, xtick_offset, xtick_step, ylabel,
-                                  ylabel_rotation, ylabel_size, ytick_offset, ytick_step)
-
-        if frame_on is None:  # Set default
-            frame_on = {'top': False, 'bottom': True, 'right': False, 'left': True}
-
-        ax_main.spines['top'].set_visible(frame_on['top'])
-        ax_main.spines['right'].set_visible(frame_on['right'])
-        ax_main.spines['bottom'].set_visible(frame_on['bottom'])
-        ax_main.spines['left'].set_visible(frame_on['left'])
-
-        if output_name is not None:
-            if '.' not in output_name:
-                fig.savefig(f"{output_name}.pdf", dpi=dpi, bbox_inches='tight')
-            else:
-                fig.savefig(f"{output_name}", dpi=dpi, bbox_inches='tight')
-        else:
-            fig.savefig("test_trplot.png", dpi=dpi, bbox_inches='tight')
-
-        if show_figure:
-            plt.show()
-        plt.close(fig)
-
+        return sorted_aligned_labeled_repeats
+    
     def set_symbol_to_motif_map(self, aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
                                 symbol_to_motif):
         unique_labels = self._get_unique_labels(aligned_labeled_repeats)
@@ -464,7 +462,8 @@ class TandemRepeatVisualizer:
 
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
                     private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids):
-        
+
+        compress_tag = False
         box_height = 1.0
         box_width = 1.0
         for allele_index, allele in enumerate(sorted_aligned_labeled_repeats):
