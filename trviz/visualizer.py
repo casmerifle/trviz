@@ -364,7 +364,7 @@ class TandemRepeatVisualizer:
 
             methylation_sample_data.append([methylation_5mC_lines, methylation_5hmC_lines])
 
-    return methylation_sample_data, methylation_sample_ids, [[upstream_start, upstream_end], [downstream_start, downstream_end]]
+        return methylation_sample_data, methylation_sample_ids, [[upstream_start, upstream_end], [downstream_start, downstream_end]]
 
     def compress_motifs(self, sorted_aligned_labeled_repeats):
         sorted_aligned_labeled_repeats_new = []
