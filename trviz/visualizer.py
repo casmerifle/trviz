@@ -259,38 +259,8 @@ class TandemRepeatVisualizer:
             sorted_aligned_labeled_repeats = self.compress_motifs(sorted_aligned_labeled_repeats)
 
         max_repeat_count = len(sorted_aligned_labeled_repeats[0])
-        
-        xaxis_ticks_uneven = 0
-        label_positions_final = []
-        labels_final = []
-        space1 = 0
-        space2 = 0
-        xaxis_ticks_rounded = 0
-        xaxis_ticks = 0
-        for i in range(methylation_region_coords[0][1] - methylation_region_coords[0][0]):
-            xaxis_ticks += 0.02
-            xaxis_ticks_rounded = int(-(-xaxis_ticks//1))
-            space1 = xaxis_ticks_rounded - xaxis_ticks
-        label_positions = [x for x in range(0,xaxis_ticks_rounded,2)]
-        labels = [(50*x) for x in range(0, xaxis_ticks_rounded,2)]
-        label_positions_final.extend(label_positions)
-        labels_final.extend(labels)
-        label_positions = [x for x in range(xaxis_ticks_rounded, xaxis_ticks_rounded + max_repeat_count)]
-        labels = [x for x in range(1, max_repeat_count + 1)]
-        label_positions_final.extend(label_positions)
-        labels_final.extend(labels)
-        xaxis_ticks = 0
-        for i in range(methylation_region_coords[1][1] - methylation_region_coords[1][0]):
-            xaxis_ticks += 0.02
-            xaxis_ticks_rounded2 = int(-(-xaxis_ticks//1))
-            space1 = xaxis_ticks_rounded - xaxis_ticks
-        label_positions = [(x+1) for x in range(xaxis_ticks_rounded + max_repeat_count, xaxis_ticks_rounded + max_repeat_count + xaxis_ticks_rounded2 + 3,2)]
-        labels = [(50*x) for x in range(xaxis_ticks_rounded, xaxis_ticks_rounded + xaxis_ticks_rounded2 + 3,2)]
-        label_positions_final.extend(label_positions)
-        labels_final.extend(labels)
-        print(label_positions_final)
-        print(labels_final)
-
+        # xaxis_ticks_rounded gives the x-axis position of the first tick for the second region of methylation
+        label_positions_final, labels_final, xaxis_ticks_rounded = self.xaxis_tick_label_builder(max_repeat_count, methylation_region_coords)
         
         if figure_size is None:
             h = len(sorted_sample_ids) / 5 + 2 if len(sorted_sample_ids) > 50 else 5
@@ -347,6 +317,59 @@ class TandemRepeatVisualizer:
             plt.show()
         plt.close(fig)
         return mapped_dict
+
+    def xaxis_tick_label_builder(self, max_repeat_count, methylation_region_coords):
+        xaxis_ticks_uneven = 0
+        label_positions_final = []
+        labels_final = []
+        space_total = []
+        xaxis_ticks_rounded = 0
+        
+        xaxis_ticks = 0
+        for i in range(methylation_region_coords[0][1] - methylation_region_coords[0][0]):
+            xaxis_ticks += 0.02
+        xaxis_ticks_rounded = int(-(-xaxis_ticks//1))
+        if (xaxis_ticks_rounded % 2) == 0:
+            xaxis_ticks_rounded = xaxis_ticks_rounded + 2
+        else:
+            xaxis_ticks_rounded = xaxis_ticks_rounded + 3
+        space1 = xaxis_ticks_rounded - xaxis_ticks
+        label_positions = [x for x in range(0,xaxis_ticks_rounded,2)]
+        labels = [(50*x) for x in range(0, xaxis_ticks_rounded,2)]
+        label_positions_final.extend(label_positions)
+        labels_final.extend(labels)
+
+        if (max_repeat_counts % 0) == 2:
+            label_positions = [x for x in range(xaxis_ticks_rounded, xaxis_ticks_rounded + max_repeat_count)]
+            labels = [x for x in range(1, max_repeat_count + 1)]
+            label_positions_final.extend(label_positions)
+            labels_final.extend(labels)
+        else:
+            max_repeat_count_new = max_repeat_count + 1
+            label_positions = [(0.5*x)+xaxis_ticks_rounded for x in range(0, max_repeat_count_new)]
+            labels = [x for x in range(1, max_repeat_count + 2)]
+            label_positions_final.extend(label_positions)
+            labels_final.extend(labels)
+
+        # re-count second region start
+        new_start = ((methylation_region_coords[1][0] - methylation_region_coords[0][0]) // 50) * 50
+        xaxis_ticks = 0
+        for i in range(methylation_region_coords[1][1] - methylation_region_coords[1][0]):
+            xaxis_ticks += 0.02
+        xaxis_ticks_rounded2 = int(-(-xaxis_ticks//1))
+        space1 = xaxis_ticks_rounded - xaxis_ticks
+        if ((xaxis_ticks_rounded + max_repeat_count) % 2) == 0:
+            label_positions = [x for x in range(xaxis_ticks_rounded + max_repeat_count + 2, xaxis_ticks_rounded + max_repeat_count + xaxis_ticks_rounded2 + 4,2)]
+            labels = [(50*x)+new_start for x in range(0, xaxis_ticks_rounded2 + 2,2)]
+        else:
+            label_positions = [x for x in range(xaxis_ticks_rounded + max_repeat_count + 3, xaxis_ticks_rounded + max_repeat_count + xaxis_ticks_rounded2 + 5,2)]
+            labels = [(50*x)+new_start for x in range(0, xaxis_ticks_rounded2 + 2,2)]
+        label_positions_final.extend(label_positions)
+        labels_final.extend(labels)
+        
+        print(label_positions_final)
+        print(labels_final)
+        return label_positions_final, labels_final, xaxis_ticks_rounded
 
     def generate_adjacent_data(self, adjacent_methylation_flag, repeat_coord_start, repeat_coord_end):
         try:
