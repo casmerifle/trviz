@@ -260,7 +260,7 @@ class TandemRepeatVisualizer:
 
         max_repeat_count = len(sorted_aligned_labeled_repeats[0])
         # xaxis_ticks_rounded gives the x-axis position of the first tick for the second region of methylation
-        label_positions_final, labels_final, xaxis_ticks_rounded = self.xaxis_tick_label_builder(max_repeat_count, methylation_region_coords)
+        label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start = self.xaxis_tick_label_builder(max_repeat_count, methylation_region_coords)
         
         if figure_size is None:
             h = len(sorted_sample_ids) / 5 + 2 if len(sorted_sample_ids) > 50 else 5
@@ -282,7 +282,7 @@ class TandemRepeatVisualizer:
 
         if ((adjacent_methylation_flag != False) and (adjacent_methylation_flag != "False")):
             upstream_distance = self.draw_methylation_marks(ax_main, box_line_width, no_edge, allele_as_row, sorted_sample_ids, sorted_aligned_labeled_repeats,
-                                       methylation_sample_data, methylation_sample_ids, methylation_region_coords, max_repeat_count + xaxis_ticks_rounded + 1)
+                                       methylation_sample_data, methylation_sample_ids, methylation_region_coords, position_2ndRegion_start)
 
         mapped_dict = self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
                          sorted_aligned_labeled_repeats, sorted_sample_ids, xaxis_ticks_rounded)
@@ -367,7 +367,7 @@ class TandemRepeatVisualizer:
         
         print(label_positions_final)
         print(labels_final)
-        return label_positions_final, labels_final, xaxis_ticks_rounded
+        return label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start
 
     def generate_adjacent_data(self, adjacent_methylation_flag, repeat_coord_start, repeat_coord_end):
         try:
@@ -666,7 +666,7 @@ class TandemRepeatVisualizer:
         symbol_key = []
         compress_tag = False
         box_height = 1.0
-        box_width = 1.0
+        box_width = 0.5
         for allele_index, allele in enumerate(sorted_aligned_labeled_repeats):
             motif_index = 0
             # each column is an allele
