@@ -356,8 +356,12 @@ class TandemRepeatVisualizer:
         for i in range(methylation_region_coords[1][1] - methylation_region_coords[1][0]):
             xaxis_ticks += 0.02
         xaxis_ticks_rounded2 = int(-(-xaxis_ticks//1))
-        label_positions = [((2*x) + position_2ndRegion_start) for x in range(0, xaxis_ticks_rounded2 + 1)]
-        labels = [(50*x)+new_start for x in range(0, xaxis_ticks_rounded2 + 1)]
+        if (xaxis_ticks_rounded2 % 2) == 0:
+            xaxis_ticks_rounded2 += 2
+        else:
+            xaxis_ticks_rounded2 += 1
+        label_positions = [(x + position_2ndRegion_start) for x in range(0, xaxis_ticks_rounded2 + 1, 2)]
+        labels = [(50*x)+new_start for x in range(0, xaxis_ticks_rounded2 + 1, 2)]
         label_positions_final.extend(label_positions)
         labels_final.extend(labels)
         
