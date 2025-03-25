@@ -636,7 +636,7 @@ class TandemRepeatVisualizer:
                         #print(str(float(coordinate_line[10])/100))
                         #print(mpl.colormaps["bwr"]((float(coordinate_line[10])+1)/100))
                         #print(str(1/special_to_remove))
-                        fcolor = mpl.colormaps["bwr"]((float(coordinate_line[10])+1)/100) # get color from blue (0) to red (1)
+                        fcolor = mpl.colormaps["autumn"](1-( (float(coordinate_line[10])+0.1) / 100 )) # get color from yellow (0) to red (1)
                         ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
                                                         linewidth=box_line_width + 0.1,
                                                         facecolor=fcolor,
