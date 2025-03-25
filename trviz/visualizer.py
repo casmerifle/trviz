@@ -664,24 +664,21 @@ class TandemRepeatVisualizer:
                                                             edgecolor=fcolor if no_edge else "white",))
                 else:
                     offset_count += 1
+        #for coordinate_index in range(abs(methylation_region_coords[1][0] - methylation_region_coords[1][1])):
+        #    current_coordinate_abs = coordinate_index + methylation_region_coords[1][0]
+        #    if allele_as_row:
+        #        box_position[0] = (box_width * coordinate_index) + max_repeat_count_andInitial  # move x position
+        #    else:
+        #        box_position[1] = (box_height * coordinate_index) + max_repeat_count_andInitial
+        #    for coordinate_line in methylation_current_sample_data[0]: # use index 0 which is for 5mC, not 5hmC
+        #        coordinate_line = coordinate_line.split("\t")
+        #        if int(coordinate_line[1]) == int(current_coordinate_abs):
+        #            fcolor = mpl.colormaps["autumn"](1-( (float(coordinate_line[10])+0.1) / 100 )) # get color from yellow (0) to red (1)
+        #            ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
+        #                                            linewidth=box_line_width + 0.1,
+        #                                            facecolor=fcolor,
+        #                                            edgecolor=fcolor if no_edge else "white",))
         return upstream_distance
-            '''
-            for coordinate_index in range(abs(methylation_region_coords[1][0] - methylation_region_coords[1][1])):
-                current_coordinate_abs = coordinate_index + methylation_region_coords[1][0]
-                if allele_as_row:
-                    box_position[0] = (box_width * coordinate_index) + max_repeat_count_andInitial  # move x position
-                else:
-                    box_position[1] = (box_height * coordinate_index) + max_repeat_count_andInitial
-
-                for coordinate_line in methylation_current_sample_data[0]: # use index 0 which is for 5mC, not 5hmC
-                    coordinate_line = coordinate_line.split("\t")
-                    if int(coordinate_line[1]) == int(current_coordinate_abs):
-                        fcolor = mpl.colormaps["autumn"](1-( (float(coordinate_line[10])+0.1) / 100 )) # get color from yellow (0) to red (1)
-                        ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
-                                                        linewidth=box_line_width + 0.1,
-                                                        facecolor=fcolor,
-                                                        edgecolor=fcolor if no_edge else "white",))
-            '''
 
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
                     private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids, xaxis_ticks_rounded):
