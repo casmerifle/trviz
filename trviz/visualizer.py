@@ -260,7 +260,7 @@ class TandemRepeatVisualizer:
 
         max_repeat_count = len(sorted_aligned_labeled_repeats[0])
         # xaxis_ticks_rounded gives the x-axis position of the first tick for the second region of methylation
-        label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start = self.xaxis_tick_label_builder(max_repeat_count, methylation_region_coords)
+        label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start, new_start = self.xaxis_tick_label_builder(max_repeat_count, methylation_region_coords)
         
         if figure_size is None:
             h = len(sorted_sample_ids) / 5 + 2 if len(sorted_sample_ids) > 50 else 5
@@ -282,7 +282,7 @@ class TandemRepeatVisualizer:
 
         if ((adjacent_methylation_flag != False) and (adjacent_methylation_flag != "False")):
             upstream_distance = self.draw_methylation_marks(ax_main, box_line_width, no_edge, allele_as_row, sorted_sample_ids, sorted_aligned_labeled_repeats,
-                                       methylation_sample_data, methylation_sample_ids, methylation_region_coords, position_2ndRegion_start)
+                                       methylation_sample_data, methylation_sample_ids, methylation_region_coords, position_2ndRegion_start, new_start)
 
         mapped_dict = self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
                          sorted_aligned_labeled_repeats, sorted_sample_ids, xaxis_ticks_rounded)
@@ -367,7 +367,7 @@ class TandemRepeatVisualizer:
         
         print(label_positions_final)
         print(labels_final)
-        return label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start
+        return label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start, new_start
 
     def generate_adjacent_data(self, adjacent_methylation_flag, repeat_coord_start, repeat_coord_end):
         try:
@@ -599,7 +599,8 @@ class TandemRepeatVisualizer:
             ax_main.set_ylabel(ylabel, fontsize=ylabel_size)
 
     def draw_methylation_marks(self, ax_main, box_line_width, no_edge, allele_as_row, sorted_sample_ids,
-                               sorted_aligned_labeled_repeats, methylation_sample_data, methylation_sample_ids, methylation_region_coords, max_repeat_count_andInitial):
+                               sorted_aligned_labeled_repeats, methylation_sample_data, methylation_sample_ids,
+                               methylation_region_coords, max_repeat_count_andInitial, new_start):
 
         ### We operate under the assumption that methylation is consistent across both alleles ###
         ### Map methylation_sample_data to sorted_samples_ids ###
@@ -642,6 +643,27 @@ class TandemRepeatVisualizer:
                                                         facecolor=fcolor,
                                                         edgecolor=fcolor if no_edge else "white",))
 
+            offset_count = 0
+            offset_secondRegion = abs(methylation_region_coords[1][1] - methylation_region_coords[0][0]) - new_start - abs(methylation_region_coords[1][0] - methylation_region_coords[1][1])
+            for coordinate_index in range(offset_secondRegion + abs(methylation_region_coords[1][0] - methylation_region_coords[1][1])):
+                current_coordinate_abs = coordinate_index + methylation_region_coords[1][0] - offset_secondRegion
+                if offset_count > offset_secondRegion:
+                    if allele_as_row:
+                        box_position[0] = (box_width * coordinate_index) + max_repeat_count_andInitial + (offset_secondRegion * box_width)  # move x position
+                    else:
+                        box_position[1] = (box_height * coordinate_index) + max_repeat_count_andInitial + (offset_secondRegion * box_width)
+    
+                    for coordinate_line in methylation_current_sample_data[0]: # use index 0 which is for 5mC, not 5hmC
+                        coordinate_line = coordinate_line.split("\t")
+                        if int(coordinate_line[1]) == int(current_coordinate_abs):
+                            fcolor = mpl.colormaps["autumn"](1-( (float(coordinate_line[10])+0.1) / 100 )) # get color from yellow (0) to red (1)
+                            ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
+                                                            linewidth=box_line_width + 0.1,
+                                                            facecolor=fcolor,
+                                                            edgecolor=fcolor if no_edge else "white",))
+                else:
+                    offset_count += 1
+'''
             for coordinate_index in range(abs(methylation_region_coords[1][0] - methylation_region_coords[1][1])):
                 current_coordinate_abs = coordinate_index + methylation_region_coords[1][0]
                 if allele_as_row:
@@ -657,6 +679,7 @@ class TandemRepeatVisualizer:
                                                         linewidth=box_line_width + 0.1,
                                                         facecolor=fcolor,
                                                         edgecolor=fcolor if no_edge else "white",))
+'''
         return upstream_distance
 
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
