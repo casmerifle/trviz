@@ -604,7 +604,8 @@ class TandemRepeatVisualizer:
 
         ### We operate under the assumption that methylation is consistent across both alleles ###
         ### Map methylation_sample_data to sorted_samples_ids ###
-                                   
+
+        upstream_distance = 0
         box_height = 1.0
         box_width = 0.02
         for allele_index, (allele, SV_sample_id) in enumerate(zip(sorted_aligned_labeled_repeats, sorted_sample_ids)):
@@ -663,6 +664,7 @@ class TandemRepeatVisualizer:
                                                             edgecolor=fcolor if no_edge else "white",))
                 else:
                     offset_count += 1
+        return upstream_distance
 '''
             for coordinate_index in range(abs(methylation_region_coords[1][0] - methylation_region_coords[1][1])):
                 current_coordinate_abs = coordinate_index + methylation_region_coords[1][0]
@@ -680,7 +682,6 @@ class TandemRepeatVisualizer:
                                                         facecolor=fcolor,
                                                         edgecolor=fcolor if no_edge else "white",))
 '''
-        return upstream_distance
 
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
                     private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids, xaxis_ticks_rounded):
