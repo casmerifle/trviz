@@ -665,7 +665,7 @@ class TandemRepeatVisualizer:
                 else:
                     offset_count += 1
         return upstream_distance
-'''
+            '''
             for coordinate_index in range(abs(methylation_region_coords[1][0] - methylation_region_coords[1][1])):
                 current_coordinate_abs = coordinate_index + methylation_region_coords[1][0]
                 if allele_as_row:
@@ -681,7 +681,7 @@ class TandemRepeatVisualizer:
                                                         linewidth=box_line_width + 0.1,
                                                         facecolor=fcolor,
                                                         edgecolor=fcolor if no_edge else "white",))
-'''
+            '''
 
     def draw_motifs(self, allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge,
                     private_motif_color, sorted_aligned_labeled_repeats, sorted_sample_ids, xaxis_ticks_rounded):
