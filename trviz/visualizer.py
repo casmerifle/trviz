@@ -339,7 +339,7 @@ class TandemRepeatVisualizer:
         label_positions_final.extend(label_positions)
         labels_final.extend(labels)
 
-        if (max_repeat_counts % 0) == 2:
+        if (max_repeat_count % 0) == 2:
             label_positions = [x for x in range(xaxis_ticks_rounded, xaxis_ticks_rounded + max_repeat_count)]
             labels = [x for x in range(1, max_repeat_count + 1)]
             label_positions_final.extend(label_positions)
