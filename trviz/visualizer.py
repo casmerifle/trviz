@@ -652,7 +652,7 @@ class TandemRepeatVisualizer:
                 for coordinate_line in methylation_current_sample_data[0]: # use index 0 which is for 5mC, not 5hmC
                     coordinate_line = coordinate_line.split("\t")
                     if int(coordinate_line[1]) == int(current_coordinate_abs):
-                        fcolor = mpl.colormaps["bwr"](float(coordinate_line[10])/100) # get color from blue (0) to red (1)
+                        fcolor = mpl.colormaps["autumn"](1-( (float(coordinate_line[10])+0.1) / 100 )) # get color from yellow (0) to red (1)
                         ax_main.add_patch(plt.Rectangle(box_position, box_width, box_height,
                                                         linewidth=box_line_width + 0.1,
                                                         facecolor=fcolor,
