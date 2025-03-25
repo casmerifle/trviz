@@ -323,6 +323,7 @@ class TandemRepeatVisualizer:
         label_positions_final = []
         labels_final = []
         space_total = []
+        position_2ndRegion_start = 0
         xaxis_ticks_rounded = 0
         
         xaxis_ticks = 0
@@ -333,23 +334,21 @@ class TandemRepeatVisualizer:
             xaxis_ticks_rounded = xaxis_ticks_rounded + 2
         else:
             xaxis_ticks_rounded = xaxis_ticks_rounded + 3
-        space1 = xaxis_ticks_rounded - xaxis_ticks
         label_positions = [x for x in range(0,xaxis_ticks_rounded,2)]
         labels = [(50*x) for x in range(0, xaxis_ticks_rounded,2)]
         label_positions_final.extend(label_positions)
         labels_final.extend(labels)
 
-        if (max_repeat_count % 0) == 2:
-            label_positions = [x for x in range(xaxis_ticks_rounded, xaxis_ticks_rounded + max_repeat_count)]
+        if (max_repeat_count % 2) == 0:
+            label_positions = [(0.5*x)+xaxis_ticks_rounded+0.25 for x in range(0, max_repeat_count)]
             labels = [x for x in range(1, max_repeat_count + 1)]
-            label_positions_final.extend(label_positions)
-            labels_final.extend(labels)
         else:
             max_repeat_count_new = max_repeat_count + 1
-            label_positions = [(0.5*x)+xaxis_ticks_rounded for x in range(0, max_repeat_count_new)]
+            label_positions = [(0.5*x)+xaxis_ticks_rounded+0.25 for x in range(0, max_repeat_count_new)]
             labels = [x for x in range(1, max_repeat_count + 2)]
-            label_positions_final.extend(label_positions)
-            labels_final.extend(labels)
+        label_positions_final.extend(label_positions)
+        labels_final.extend(labels)
+        position_2ndRegion_start = (label_positions[-1] // 1) + 2
 
         # re-count second region start
         new_start = ((methylation_region_coords[1][0] - methylation_region_coords[0][0]) // 50) * 50
@@ -357,13 +356,8 @@ class TandemRepeatVisualizer:
         for i in range(methylation_region_coords[1][1] - methylation_region_coords[1][0]):
             xaxis_ticks += 0.02
         xaxis_ticks_rounded2 = int(-(-xaxis_ticks//1))
-        space1 = xaxis_ticks_rounded - xaxis_ticks
-        if ((xaxis_ticks_rounded + max_repeat_count) % 2) == 0:
-            label_positions = [x for x in range(xaxis_ticks_rounded + max_repeat_count + 2, xaxis_ticks_rounded + max_repeat_count + xaxis_ticks_rounded2 + 4,2)]
-            labels = [(50*x)+new_start for x in range(0, xaxis_ticks_rounded2 + 2,2)]
-        else:
-            label_positions = [x for x in range(xaxis_ticks_rounded + max_repeat_count + 3, xaxis_ticks_rounded + max_repeat_count + xaxis_ticks_rounded2 + 5,2)]
-            labels = [(50*x)+new_start for x in range(0, xaxis_ticks_rounded2 + 2,2)]
+        label_positions = [((2*x) + position_2ndRegion_start) for x in range(0, xaxis_ticks_rounded2 + 1)]
+        labels = [(50*x)+new_start for x in range(0, xaxis_ticks_rounded2 + 1)]
         label_positions_final.extend(label_positions)
         labels_final.extend(labels)
         
