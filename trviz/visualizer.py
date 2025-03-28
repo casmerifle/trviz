@@ -624,7 +624,10 @@ class TandemRepeatVisualizer:
             final_coordinate_index = 0
             for coordinate_index in range(abs(methylation_region_coords[0][0] - methylation_region_coords[0][1])):
                 current_coordinate_abs = coordinate_index + methylation_region_coords[0][0]
-                final_coordinate_index = (first_region_length*50) - methylation_region_coords[0][1] - current_coordinate_abs
+                final_coordinate_index = first_region_length*50 - abs(methylation_region_coords[0][0] - methylation_region_coords[0][1]) + coordinate_index
+                print(first_region_length)
+                print(final_coordinate_index)
+                print(str(1/0))
                 if allele_as_row:
                     box_position[0] = box_width * final_coordinate_index  # move x position
                     upstream_distance = box_width * final_coordinate_index
