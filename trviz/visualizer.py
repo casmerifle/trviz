@@ -338,7 +338,7 @@ class TandemRepeatVisualizer:
             xaxis_ticks_rounded = xaxis_ticks_rounded + 3
         first_region_length = xaxis_ticks_rounded
         label_positions = [x for x in range(0,xaxis_ticks_rounded,2)]
-        labels = [-((xaxis_ticks_rounded*50) - (50*x)) for x in range(0, xaxis_ticks_rounded,2)]
+        labels = [-((xaxis_ticks_rounded*50) - (50*(x+2))) for x in range(0, xaxis_ticks_rounded,2)]
         label_positions_final.extend(label_positions)
         labels_final.extend(labels)
 
