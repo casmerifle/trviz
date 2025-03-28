@@ -260,7 +260,7 @@ class TandemRepeatVisualizer:
 
         max_repeat_count = len(sorted_aligned_labeled_repeats[0])
         # xaxis_ticks_rounded gives the x-axis position of the first tick for the second region of methylation
-        label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start, new_start = self.xaxis_tick_label_builder(max_repeat_count, methylation_region_coords)
+        label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start, new_start, first_region_length = self.xaxis_tick_label_builder(max_repeat_count, methylation_region_coords)
         
         if figure_size is None:
             h = len(sorted_sample_ids) / 5 + 2 if len(sorted_sample_ids) > 50 else 5
@@ -282,7 +282,8 @@ class TandemRepeatVisualizer:
 
         if ((adjacent_methylation_flag != False) and (adjacent_methylation_flag != "False")):
             upstream_distance = self.draw_methylation_marks(ax_main, box_line_width, no_edge, allele_as_row, sorted_sample_ids, sorted_aligned_labeled_repeats,
-                                       methylation_sample_data, methylation_sample_ids, methylation_region_coords, position_2ndRegion_start, new_start)
+                                       methylation_sample_data, methylation_sample_ids, methylation_region_coords, position_2ndRegion_start, new_start,
+                                        first_region_length)
 
         mapped_dict = self.draw_motifs(allele_as_row, ax_main, box_line_width, motif_marks, motif_style, no_edge, private_motif_color,
                          sorted_aligned_labeled_repeats, sorted_sample_ids, xaxis_ticks_rounded)
@@ -325,6 +326,7 @@ class TandemRepeatVisualizer:
         space_total = []
         position_2ndRegion_start = 0
         xaxis_ticks_rounded = 0
+        first_region_length = 0
         
         xaxis_ticks = 0
         for i in range(methylation_region_coords[0][1] - methylation_region_coords[0][0]):
@@ -334,6 +336,7 @@ class TandemRepeatVisualizer:
             xaxis_ticks_rounded = xaxis_ticks_rounded + 2
         else:
             xaxis_ticks_rounded = xaxis_ticks_rounded + 3
+        first_region_length = xaxis_ticks_rounded
         label_positions = [x for x in range(0,xaxis_ticks_rounded,2)]
         labels = [-((xaxis_ticks_rounded*50) - (50*x)) for x in range(0, xaxis_ticks_rounded,2)]
         label_positions_final.extend(label_positions)
@@ -361,13 +364,13 @@ class TandemRepeatVisualizer:
         else:
             xaxis_ticks_rounded2 += 1
         label_positions = [(x + position_2ndRegion_start) for x in range(0, xaxis_ticks_rounded2 + 1, 2)]
-        labels = [(50*x)+new_start for x in range(0, xaxis_ticks_rounded2 + 1, 2)]
+        labels = [(50*x) for x in range(0, xaxis_ticks_rounded2 + 1, 2)]
         label_positions_final.extend(label_positions)
         labels_final.extend(labels)
         
         print(label_positions_final)
         print(labels_final)
-        return label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start, new_start
+        return label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start, new_start, first_region_length
 
     def generate_adjacent_data(self, adjacent_methylation_flag, repeat_coord_start, repeat_coord_end):
         try:
@@ -600,7 +603,7 @@ class TandemRepeatVisualizer:
 
     def draw_methylation_marks(self, ax_main, box_line_width, no_edge, allele_as_row, sorted_sample_ids,
                                sorted_aligned_labeled_repeats, methylation_sample_data, methylation_sample_ids,
-                               methylation_region_coords, max_repeat_count_andInitial, new_start):
+                               methylation_region_coords, max_repeat_count_andInitial, new_start, first_region_length):
 
         ### We operate under the assumption that methylation is consistent across both alleles ###
         ### Map methylation_sample_data to sorted_samples_ids ###
@@ -620,14 +623,14 @@ class TandemRepeatVisualizer:
 
             final_coordinate_index = 0
             for coordinate_index in range(abs(methylation_region_coords[0][0] - methylation_region_coords[0][1])):
-                final_coordinate_index = coordinate_index
                 current_coordinate_abs = coordinate_index + methylation_region_coords[0][0]
+                final_coordinate_index = first_region_length - methylation_region_coords[0][1] - current_coordinate_abs
                 if allele_as_row:
-                    box_position[0] = box_width * coordinate_index  # move x position
-                    upstream_distance = box_width * coordinate_index
+                    box_position[0] = box_width * final_coordinate_index  # move x position
+                    upstream_distance = box_width * final_coordinate_index
                 else:
-                    box_position[1] = box_height * coordinate_index
-                    upstream_distance = box_height * coordinate_index
+                    box_position[1] = box_height * final_coordinate_index
+                    upstream_distance = box_height * final_coordinate_index
                 special_to_remove = 15
                 for coordinate_line in methylation_current_sample_data[0]: # use index 0 which is for 5mC, not 5hmC
                     special_to_remove = special_to_remove - 1
