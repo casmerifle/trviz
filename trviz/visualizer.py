@@ -335,7 +335,7 @@ class TandemRepeatVisualizer:
         else:
             xaxis_ticks_rounded = xaxis_ticks_rounded + 3
         label_positions = [x for x in range(0,xaxis_ticks_rounded,2)]
-        labels = [(50*x) for x in range(0, xaxis_ticks_rounded,2)]
+        labels = [-((xaxis_ticks_rounded*50) - (50*x)) for x in range(0, xaxis_ticks_rounded,2)]
         label_positions_final.extend(label_positions)
         labels_final.extend(labels)
 
@@ -346,8 +346,8 @@ class TandemRepeatVisualizer:
             max_repeat_count_new = max_repeat_count + 1
             label_positions = [(0.5*x)+xaxis_ticks_rounded+0.25 for x in range(0, max_repeat_count_new)]
             labels = [x for x in range(1, max_repeat_count + 2)]
-        label_positions_final.extend(label_positions)
-        labels_final.extend(labels)
+        #label_positions_final.extend(label_positions)
+        #labels_final.extend(labels)
         position_2ndRegion_start = (label_positions[-1] // 1) + 2
 
         # re-count second region start
