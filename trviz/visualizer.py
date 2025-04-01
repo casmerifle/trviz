@@ -520,6 +520,7 @@ class TandemRepeatVisualizer:
         
         sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
         sorted_aligned_labeled_repeats = sorted_aligned_labeled_repeats_df.transpose().to_numpy().tolist()
+        print(sorted_aligned_labeled_repeats)
         return sorted_aligned_labeled_repeats
     
     def set_symbol_to_motif_map(self, aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
