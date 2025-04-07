@@ -716,7 +716,9 @@ class TandemRepeatVisualizer:
                     # Temporary insertion to handle compressed symbols in format COMPRESS-S-N #
                     ###########################################################################
                     if "COMPRESS" in symbol:
-                        if str(allele_index) in symbol.split("-")[3]:
+                        masked_indexes = symbol.split("-")[3].strip().split("=")
+                        masked_indexes = [int(num) for num in masked_indexes]
+                        if int(allele_index) in masked_indexes:
                             fcolor = (1, 1, 1, 1)
                             compress_tag = False
                         else:
