@@ -415,7 +415,7 @@ class TandemRepeatVisualizer:
             for lines in filelines:
                 line = lines.split("\t")
                 if chr.strip() in line[0]:
-                    if int(line[4]) >= 10:
+                    if int(line[4]) >= 3:
                         if line[3] == "m":
                             methylation_5mC_lines.append(lines)
                         elif line[3] == "h":
@@ -520,8 +520,8 @@ class TandemRepeatVisualizer:
         
         sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
         sorted_aligned_labeled_repeats = sorted_aligned_labeled_repeats_df.transpose().to_numpy().tolist()
-        print(sorted_aligned_labeled_repeats)
-        print(len(sorted_aligned_labeled_repeats))
+        #print(sorted_aligned_labeled_repeats)
+        #print(len(sorted_aligned_labeled_repeats))
         return sorted_aligned_labeled_repeats
     
     def set_symbol_to_motif_map(self, aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
