@@ -138,6 +138,8 @@ class TandemRepeatVisualizer:
                compression_flag = True,
                repeat_coord_start = 0,
                repeat_coord_end = 0,
+               methylation_coord_start = 0,
+               methylation_coord_end = 0,
                sample_to_label: Dict[str, str] = None,
                motif_marks: Dict[str, str] = None,
                allele_as_row: bool = True,
@@ -214,10 +216,10 @@ class TandemRepeatVisualizer:
         methylation_length_total = 0
         upstream_distance = 0
         if ((adjacent_methylation_flag != False) and (adjacent_methylation_flag != "False")):
-            if ((repeat_coord_start == 0) or (repeat_coord_end == 0)):
-                raise ValueError("Error: Please specify a repeat_coord_start and repeat_coord_end. This region should be the repeat region with the region of interest which will NOT have methylation analyzed on the basis of poor alignment.")
+            if ((repeat_coord_start == 0) or (repeat_coord_end == 0) or (methylation_coord_start == 0) or (methylation_coord_end == 0)):
+                raise ValueError("Error: Please specify a repeat_coord_start, repeat_coord_end, methylation_coord_start and methylation_coord_end. This region should be the repeat region with the region of interest which will NOT have methylation analyzed on the basis of poor alignment.")
             else:
-                methylation_sample_data, methylation_sample_ids, methylation_region_coords = self.generate_adjacent_data(adjacent_methylation_flag, repeat_coord_start, repeat_coord_end)
+                methylation_sample_data, methylation_sample_ids, methylation_region_coords = self.generate_adjacent_data(adjacent_methylation_flag, repeat_coord_start, repeat_coord_end, methylation_coord_start, methylation_coord_end)
                 methylation_length_total = abs(methylation_region_coords[0][0] - methylation_region_coords[1][1])
                 print(methylation_region_coords)
 
@@ -372,7 +374,7 @@ class TandemRepeatVisualizer:
         #print(labels_final)
         return label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start, new_start, first_region_length
 
-    def generate_adjacent_data(self, adjacent_methylation_flag, repeat_coord_start, repeat_coord_end):
+    def generate_adjacent_data(self, adjacent_methylation_flag, repeat_coord_start, repeat_coord_end, methylation_coord_start, methylation_coord_end):
         try:
             temporary_placeholder = int(repeat_coord_start)
             temporary_placeholder = int(repeat_coord_end)
@@ -425,6 +427,8 @@ class TandemRepeatVisualizer:
 
             methylation_sample_data.append([methylation_5mC_lines, methylation_5hmC_lines])
 
+        upstream_start = methylation_coord_start
+        downstream_end = methylation_coord_end
         return methylation_sample_data, methylation_sample_ids, [[upstream_start, upstream_end], [downstream_start, downstream_end]]
 
     def compress_motifs(self, sorted_aligned_labeled_repeats):
