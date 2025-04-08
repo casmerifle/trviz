@@ -722,22 +722,25 @@ class TandemRepeatVisualizer:
                     ###########################################################################
                     if "COMPRESS" in symbol:
                         masked_indexes = symbol.split("-")[3].strip().split("=")
-                        masked_indexes = [int(num) for num in masked_indexes]
-                        if masked_indexes[0] == "NIL":
-                            fcolor = self.symbol_to_color[symbol.split("-")[1]]
-                            compress_tag = "<" + str(symbol.split("-")[2]) + ">"
-                            if symbol.split("-")[1] not in symbol_key:
-                                symbol_key.append(symbol.split("-")[1])
-                                color_key.append(fcolor)
-                        elif int(allele_index) in masked_indexes:
-                            fcolor = (1, 1, 1, 1)
-                            compress_tag = False
-                        else:
-                            fcolor = self.symbol_to_color[symbol.split("-")[1]]
-                            compress_tag = "<" + str(symbol.split("-")[2]) + ">"
-                            if symbol.split("-")[1] not in symbol_key:
-                                symbol_key.append(symbol.split("-")[1])
-                                color_key.append(fcolor)
+                        try:
+                            masked_indexes = [int(num) for num in masked_indexes]
+                            if int(allele_index) in masked_indexes:
+                                fcolor = (1, 1, 1, 1)
+                                compress_tag = False
+                            else:
+                                fcolor = self.symbol_to_color[symbol.split("-")[1]]
+                                compress_tag = "<" + str(symbol.split("-")[2]) + ">"
+                                if symbol.split("-")[1] not in symbol_key:
+                                    symbol_key.append(symbol.split("-")[1])
+                                    color_key.append(fcolor)
+                        except:
+                            print(masked_indexes)
+                            if masked_indexes[0] == "NIL":
+                                fcolor = self.symbol_to_color[symbol.split("-")[1]]
+                                compress_tag = "<" + str(symbol.split("-")[2]) + ">"
+                                if symbol.split("-")[1] not in symbol_key:
+                                    symbol_key.append(symbol.split("-")[1])
+                                    color_key.append(fcolor)
                     else:
                         fcolor = self.symbol_to_color[symbol]
                         compress_tag = False
