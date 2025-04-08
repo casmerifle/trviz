@@ -520,6 +520,7 @@ class TandemRepeatVisualizer:
         
         sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
         sorted_aligned_labeled_repeats = sorted_aligned_labeled_repeats_df.transpose().to_numpy().tolist()
+        print(sorted_aligned_labeled_repeats)
         print(len(sorted_aligned_labeled_repeats))
         return sorted_aligned_labeled_repeats
     
@@ -809,9 +810,9 @@ class TandemRepeatVisualizer:
                     #                              ))
                 else:
                     raise ValueError(f"Unknown motif style: {motif_style}")
-            print("Printing for actual STRs now.")
-            print(str(allele_index))
-            print(str(box_position[0]))
+            #print("Printing for actual STRs now.")
+            #print(str(allele_index))
+            #print(str(box_position[0]))
         mapped_dict = dict(zip(symbol_key, color_key))
         return mapped_dict
 
