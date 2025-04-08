@@ -267,7 +267,7 @@ class TandemRepeatVisualizer:
             #w = max_repeat_count / 5 + 2 + (methylation_length_total / 180) if max_repeat_count > 50 else max_repeat_count / 5 + 2 + (methylation_length_total / 180)
             w = max_repeat_count / 5 + 2 + (methylation_length_total / 100) if max_repeat_count > 50 else max_repeat_count / 5 + 2 + (methylation_length_total / 180)
             #w = len(label_positions_final)            
-            print(str(w))
+            #print(str(w))
             if not allele_as_row:
                 w, h = h, w
             if h * dpi > 2**16:
@@ -368,8 +368,8 @@ class TandemRepeatVisualizer:
         label_positions_final.extend(label_positions)
         labels_final.extend(labels)
         
-        print(label_positions_final)
-        print(labels_final)
+        #print(label_positions_final)
+        #print(labels_final)
         return label_positions_final, labels_final, xaxis_ticks_rounded, position_2ndRegion_start, new_start, first_region_length
 
     def generate_adjacent_data(self, adjacent_methylation_flag, repeat_coord_start, repeat_coord_end):
@@ -520,7 +520,7 @@ class TandemRepeatVisualizer:
         
         sorted_aligned_labeled_repeats_df.drop(sorted_aligned_labeled_repeats_df.index[drop_list], inplace=True)
         sorted_aligned_labeled_repeats = sorted_aligned_labeled_repeats_df.transpose().to_numpy().tolist()
-        print(sorted_aligned_labeled_repeats)
+        print(len(sorted_aligned_labeled_repeats))
         return sorted_aligned_labeled_repeats
     
     def set_symbol_to_motif_map(self, aligned_labeled_repeats, alpha, color_palette, colored_motifs, colormap,
